@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<uexplugins>
+	<plugin
+        className="org.zywx.wbpalmstar.plugin.uexbluetoothble.EUExBluetoothBLE" uexName="uexBluetoothBLE" >
+            <method name="init" />
+            <method name="connect" />
+            <method name="disconnect" />
+            <method name="scanDevice" />
+            <method name="stopScanDevice" />
+            <method name="writeCharacteristic" />
+            <method name="readCharacteristic" />
+    </plugin>
+</uexplugins>
