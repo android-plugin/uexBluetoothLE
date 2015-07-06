@@ -1,35 +1,124 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="viewport"
-	content="width=device-width, initial-scale=1, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-	<link rel="stylesheet" type="text/css" href="css/index.css">
-	
-	<script type="text/javascript">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="css/index.css">
 
-	</script>
+    <script type="text/javascript">
+    function init(){
+        var params = {
+
+        };
+        var data = JSON.stringify(params);
+        uexBluetoothBLE.init(data);
+    }
+
+    function connect(){
+        var params = {
+            address:"88:0F:10:87:28:47"
+        };
+        var data = JSON.stringify(params);
+        uexBluetoothBLE.connect(data);
+    }
+
+    function disconnect(){
+        var params = {
+        };
+        var data = JSON.stringify(params);
+        uexBluetoothBLE.disconnect(data);
+    }
+
+    function scanDevice(){
+        var params = {
+        };
+        var data = JSON.stringify(params);
+        uexBluetoothBLE.scanDevice(data);
+    }
+
+    function stopScanDevice(){
+        var params = {
+        };
+        var data = JSON.stringify(params);
+        uexBluetoothBLE.stopScanDevice(data);
+    }
+
+    function writeCharacteristic(){
+        var params = {
+        };
+        var data = JSON.stringify(params);
+        uexBluetoothBLE.writeCharacteristic(data);
+    }
+
+    function readCharacteristic(){
+        var params = {
+        };
+        var data = JSON.stringify(params);
+        uexBluetoothBLE.readCharacteristic(data);
+    }
+
+
+        window.uexOnload = function(type){
+            if(type == 0){
+            uexBluetoothBLE.onLeScan = onLeScan;
+            uexBluetoothBLE.onConnectionStateChange = onConnectionStateChange;
+            uexBluetoothBLE.onServicesDiscovered = onServicesDiscovered;
+            uexBluetoothBLE.onCharacteristicRead = onCharacteristicRead;
+            uexBluetoothBLE.onCharacteristicChanged = onCharacteristicChanged;
+            uexBluetoothBLE.onCharacteristicWrite = onCharacteristicWrite;
+
+            }
+        }
+    function onLeScan(info){
+        console.log(info);
+        alert(info);
+    }
+
+    function onConnectionStateChange(info){
+        alert("onConnectionStateChange "+info);
+    }
+
+    function onServicesDiscovered(info){
+        alert("onServicesDiscovered "+info);
+    }
+
+    function onCharacteristicRead(info){
+        alert("onCharacteristicRead "+info);
+    }
+
+    function onCharacteristicChanged(info){
+        alert("onCharacteristicChanged "+info);
+    }
+
+    function onCharacteristicWrite(info){
+        alert("onCharacteristicWrite "+info);
+    }
+
+
+    </script>
 </head>
 
 <body>
-	<div class="tit">uexDemo对象</div>
-	<div class="conbor">
-		<div class="consj">
+<div class="tit">uexBluetoothBLE</div>
+<div class="conbor">
+    <div class="consj">
+            <input class='btn' type='button' value='init' onclick='init()'>
 
-			<input class='btn' type='button' value='init' onclick='init()'>
+            <input class='btn' type='button' value='connect' onclick='connect()'>
 
-			<input class="textbox" type="text" id="address" value="00:0E:0B:01:12:CC">
-			<input class='btn' type='button' value='connect' onclick='connect()'>
+            <input class='btn' type='button' value='disconnect' onclick='disconnect()'>
 
-			<input class='btn' type='button' value='disconnect' onclick='disconnect()'>
+            <input class='btn' type='button' value='scanDevice' onclick='scanDevice()'>
 
-			<input class='btn' type='button' value='scanDevice' onclick='scanDevice()'>
+            <input class='btn' type='button' value='stopScanDevice' onclick='stopScanDevice()'>
 
-			<input class='btn' type='button' value='stopScanDevice' onclick='stopScanDevice()'>
+            <input class='btn' type='button' value='writeCharacteristic' onclick='writeCharacteristic()'>
+
+            <input class='btn' type='button' value='readCharacteristic' onclick='readCharacteristic()'>
 
 
-			
-		</div>
-	</div>
+    </div>
+</div>
 </body>
 </html>

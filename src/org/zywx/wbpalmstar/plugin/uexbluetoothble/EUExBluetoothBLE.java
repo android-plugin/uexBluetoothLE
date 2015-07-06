@@ -247,7 +247,7 @@ public class EUExBluetoothBLE extends EUExBase {
         String address=null;
         try {
             JSONObject jsonObject = new JSONObject(json);
-            address=jsonObject.optString("address");
+            address=jsonObject.optString("address").toUpperCase();
         } catch (JSONException e) {
             e.printStackTrace();
         }
