@@ -29,6 +29,7 @@ import org.zywx.wbpalmstar.plugin.uexbluetoothble.vo.GattDescriptorVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothble.vo.GattServiceVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothble.vo.ResultVO;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,6 +58,8 @@ public class EUExBluetoothBLE extends EUExBase {
 
     private String mCharFormat=null;
     private List<BluetoothGattService> mGattServices;
+
+    private static final String TAG="appcan";
 
     public EUExBluetoothBLE(Context context, EBrowserView eBrowserView) {
         super(context, eBrowserView);
@@ -103,7 +106,7 @@ public class EUExBluetoothBLE extends EUExBase {
         if (mBluetoothAdapter == null) {
 
         }
-
+        Log.i(TAG,"plugin init");
     }
 
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
@@ -187,20 +190,27 @@ public class EUExBluetoothBLE extends EUExBase {
             gattServiceVO.setCharacteristicVOs(characteristicVOs);
             gattServiceVOs.add(gattServiceVO);
         }
-        callBackPluginJs(JsConst.ON_SERVICES_DISCOVERED,mGson.toJson(gattServiceVOs));
+        Log.i(TAG,mGson.toJson(gattServiceVOs));
+        callBackPluginJs(JsConst.ON_SERVICES_DISCOVERED, mGson.toJson(gattServiceVOs));
     }
 
     public CharacteristicVO getDataFromCharacteristic(BluetoothGattCharacteristic characteristic){
         CharacteristicVO characteristicVO=new CharacteristicVO();
         final byte[] data=characteristic.getValue();
-        if (!TextUtils.isEmpty(mCharFormat)) {
-            StringBuilder stringBuilder=new StringBuilder(data.length);
-            for (byte byteChar : data) {
-                stringBuilder.append(String.format(mCharFormat, byteChar));
+        if (data!=null) {
+            if (!TextUtils.isEmpty(mCharFormat)) {
+                StringBuilder stringBuilder = new StringBuilder(data.length);
+                for (byte byteChar : data) {
+                    stringBuilder.append(String.format(mCharFormat, byteChar));
+                }
+                characteristicVO.setValueString(stringBuilder.toString());
+            } else {
+                try {
+                    characteristicVO.setValueString(new String(data, "UTF-8"));
+                } catch (UnsupportedEncodingException e) {
+                    Log.e("appcan", e.toString());
+                }
             }
-            characteristicVO.setValueString(stringBuilder.toString());
-        }else{
-            characteristicVO.setValueString(new String(data));
         }
         characteristicVO.setPermissions(characteristic.getPermissions());
         characteristicVO.setWriteType(characteristic.getWriteType());
