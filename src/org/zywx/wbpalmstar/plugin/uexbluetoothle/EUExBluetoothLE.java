@@ -1,4 +1,4 @@
-package org.zywx.wbpalmstar.plugin.uexbluetoothble;
+package org.zywx.wbpalmstar.plugin.uexbluetoothle;
 
 import android.annotation.TargetApi;
 import android.bluetooth.BluetoothAdapter;
@@ -18,27 +18,25 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.zywx.wbpalmstar.engine.EBrowserView;
 import org.zywx.wbpalmstar.engine.universalex.EUExBase;
-import org.zywx.wbpalmstar.plugin.uexbluetoothble.vo.BluetoothDeviceVO;
-import org.zywx.wbpalmstar.plugin.uexbluetoothble.vo.CharacteristicVO;
-import org.zywx.wbpalmstar.plugin.uexbluetoothble.vo.GattDescriptorVO;
-import org.zywx.wbpalmstar.plugin.uexbluetoothble.vo.GattServiceVO;
-import org.zywx.wbpalmstar.plugin.uexbluetoothble.vo.ResultVO;
+import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.BluetoothDeviceVO;
+import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.CharacteristicVO;
+import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.GattDescriptorVO;
+import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.GattServiceVO;
+import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.ResultVO;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
-import dalvik.system.DexClassLoader;
-
 @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
-public class EUExBluetoothBLE extends EUExBase {
+public class EUExBluetoothLE extends EUExBase {
 
     private static final String BUNDLE_DATA = "data";
     private static final int MSG_INIT = 1;
@@ -48,6 +46,7 @@ public class EUExBluetoothBLE extends EUExBase {
     private static final int MSG_STOP_SCAN_DEVICE = 5;
     private static final int MSG_WRITE_CHARACTERISTIC = 6;
     private static final int MSG_READ_CHARACTERISTIC = 7;
+    private static final int MSG_SEARCH_FOR_CHARACTERISTIC = 8;
 
     private String mBluetoothDeviceAddress;
 
@@ -61,7 +60,9 @@ public class EUExBluetoothBLE extends EUExBase {
 
     private static final String TAG="appcan";
 
-    public EUExBluetoothBLE(Context context, EBrowserView eBrowserView) {
+    private EBrowserView mCallbackView;
+
+    public EUExBluetoothLE(Context context, EBrowserView eBrowserView) {
         super(context, eBrowserView);
     }
 
@@ -72,10 +73,6 @@ public class EUExBluetoothBLE extends EUExBase {
 
 
     public void init(String[] params) {
-        if (params == null || params.length < 1) {
-            errorCallback(0, 0, "error params!");
-            return;
-        }
         Message msg = new Message();
         msg.obj = this;
         msg.what = MSG_INIT;
@@ -101,12 +98,12 @@ public class EUExBluetoothBLE extends EUExBase {
 
             }
         }
-
+        mCallbackView=mBrwView;
         mBluetoothAdapter = mBluetoothManager.getAdapter();
         if (mBluetoothAdapter == null) {
 
         }
-        Log.i(TAG,"plugin init");
+        Log.i(TAG, "plugin init");
     }
 
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
@@ -165,6 +162,17 @@ public class EUExBluetoothBLE extends EUExBase {
             callBackPluginJs(JsConst.ON_CHARACTERISTIC_WRITE, mGson.toJson(resultVO));
         }
 
+        @Override
+        public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+            super.onDescriptorRead(gatt, descriptor, status);
+
+        }
+
+
+        @Override
+        public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+            super.onDescriptorWrite(gatt, descriptor, status);
+        }
 
     };
 
@@ -187,7 +195,7 @@ public class EUExBluetoothBLE extends EUExBase {
                 characteristicVOs.add(getDataFromCharacteristic(gattCharacteristic));
                 Thread.sleep(200);
             }
-            gattServiceVO.setCharacteristicVOs(characteristicVOs);
+            gattServiceVO.setCharacteristics(characteristicVOs);
             gattServiceVOs.add(gattServiceVO);
         }
         Log.i(TAG,mGson.toJson(gattServiceVOs));
@@ -222,7 +230,7 @@ public class EUExBluetoothBLE extends EUExBase {
                 gattDescriptorVOs.add(transfromDescriptor(descriptor));
             }
         }
-        characteristicVO.setGattDescriptorVOs(gattDescriptorVOs);
+        characteristicVO.setGattDescriptors(gattDescriptorVOs);
         return characteristicVO;
     }
 
@@ -299,11 +307,24 @@ public class EUExBluetoothBLE extends EUExBase {
         Message msg = new Message();
         msg.obj = this;
         msg.what = MSG_SCAN_DEVICE;
+        Bundle bd = new Bundle();
+        bd.putStringArray(BUNDLE_DATA, params);
+        msg.setData(bd);
         mHandler.sendMessage(msg);
     }
 
     private void scanDeviceMsg(String[] params) {
-        mBluetoothAdapter.startLeScan(mLeScanCallback);
+        String json=params[0];
+        List<String> uuidStrings=mGson.fromJson(json,new TypeToken<List<String>>(){}.getType());
+        if (uuidStrings==null||uuidStrings.isEmpty()) {
+            mBluetoothAdapter.startLeScan(mLeScanCallback);
+        }else {
+            UUID[] uUIDs=new UUID[uuidStrings.size()];
+            for (int i = 0; i < uuidStrings.size(); i++) {
+                uUIDs[i]=UUID.fromString(uuidStrings.get(i));
+            }
+            mBluetoothAdapter.startLeScan(uUIDs,mLeScanCallback);
+        }
     }
 
     private BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
@@ -415,6 +436,30 @@ public class EUExBluetoothBLE extends EUExBase {
           }
     }
 
+    public void searchForCharacteristic(String[] params) {
+        if (params == null || params.length < 1) {
+            errorCallback(0, 0, "error params!");
+            return;
+        }
+        Message msg = new Message();
+        msg.obj = this;
+        msg.what = MSG_SEARCH_FOR_CHARACTERISTIC;
+        Bundle bd = new Bundle();
+        bd.putStringArray(BUNDLE_DATA, params);
+        msg.setData(bd);
+        mHandler.sendMessage(msg);
+    }
+
+    private void searchForCharacteristicMsg(String[] params) {
+        String json = params[0];
+        JSONObject jsonResult = new JSONObject();
+        try {
+            jsonResult.put("", "");
+        } catch (JSONException e) {
+        }
+        callBackPluginJs(JsConst.CALLBACK_SEARCH_FOR_CHARACTERISTIC, jsonResult.toString());
+    }
+
     @Override
     public void onHandleMessage(Message message) {
         if(message == null){
@@ -444,15 +489,22 @@ public class EUExBluetoothBLE extends EUExBase {
             case MSG_READ_CHARACTERISTIC:
                 readCharacteristicMsg(bundle.getStringArray(BUNDLE_DATA));
                 break;
+            case MSG_SEARCH_FOR_CHARACTERISTIC:
+                searchForCharacteristicMsg(bundle.getStringArray(BUNDLE_DATA));
+                break;
             default:
                 super.onHandleMessage(message);
         }
     }
 
     private void callBackPluginJs(String methodName, String jsonData){
+        if (mCallbackView==null){
+            return;
+        }
         String js = SCRIPT_HEADER + "if(" + methodName + "){"
                 + methodName + "('" + jsonData + "');}";
-        onCallback(js);
+        mCallbackView.addUriTask(js);
+//        onCallback(js);
     }
 
 }

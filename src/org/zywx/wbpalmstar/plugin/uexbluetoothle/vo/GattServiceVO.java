@@ -1,4 +1,4 @@
-package org.zywx.wbpalmstar.plugin.uexbluetoothble.vo;
+package org.zywx.wbpalmstar.plugin.uexbluetoothle.vo;
 
 import java.io.Serializable;
 import java.util.List;
@@ -10,7 +10,7 @@ public class GattServiceVO implements Serializable {
     private static final long serialVersionUID = 3532586653853934910L;
 
     private String uuid;
-    private List<CharacteristicVO> characteristicVOs;
+    private List<CharacteristicVO> characteristics;
 
     public String getUuid() {
         return uuid;
@@ -20,11 +20,11 @@ public class GattServiceVO implements Serializable {
         this.uuid = uuid;
     }
 
-    public List<CharacteristicVO> getCharacteristicVOs() {
-        return characteristicVOs;
+    public List<CharacteristicVO> getCharacteristics() {
+        return characteristics;
     }
 
-    public void setCharacteristicVOs(List<CharacteristicVO> characteristicVOs) {
-        this.characteristicVOs = characteristicVOs;
+    public void setCharacteristics(List<CharacteristicVO> characteristics) {
+        this.characteristics = characteristics;
     }
 }

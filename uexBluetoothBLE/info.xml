@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
-    <plugin uexName="uexBluetoothBLE" version="3.0.0" build="0">
+    <plugin uexName="uexBluetoothLE" version="3.0.0" build="0">
         <info>0:蓝牙BLE插件</info>
     </plugin>
 </uexplugins>

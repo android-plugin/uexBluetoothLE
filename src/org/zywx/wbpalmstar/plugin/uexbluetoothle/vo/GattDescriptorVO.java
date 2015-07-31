@@ -1,4 +1,4 @@
-package org.zywx.wbpalmstar.plugin.uexbluetoothble.vo;
+package org.zywx.wbpalmstar.plugin.uexbluetoothle.vo;
 
 import java.io.Serializable;
 

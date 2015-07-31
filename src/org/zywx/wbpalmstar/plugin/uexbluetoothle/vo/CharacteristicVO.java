@@ -1,4 +1,4 @@
-package org.zywx.wbpalmstar.plugin.uexbluetoothble.vo;
+package org.zywx.wbpalmstar.plugin.uexbluetoothle.vo;
 
 import java.io.Serializable;
 import java.util.List;
@@ -16,7 +16,7 @@ public class CharacteristicVO implements Serializable {
 
     private int writeType;
 
-    private List<GattDescriptorVO> gattDescriptorVOs;
+    private List<GattDescriptorVO> gattDescriptors;
 
     public String getValueString() {
         return valueString;
@@ -34,12 +34,12 @@ public class CharacteristicVO implements Serializable {
         this.uuid = uuid;
     }
 
-    public List<GattDescriptorVO> getGattDescriptorVOs() {
-        return gattDescriptorVOs;
+    public List<GattDescriptorVO> getGattDescriptors() {
+        return gattDescriptors;
     }
 
-    public void setGattDescriptorVOs(List<GattDescriptorVO> gattDescriptorVOs) {
-        this.gattDescriptorVOs = gattDescriptorVOs;
+    public void setGattDescriptors(List<GattDescriptorVO> gattDescriptors) {
+        this.gattDescriptors = gattDescriptors;
     }
 
     public int getPermissions() {

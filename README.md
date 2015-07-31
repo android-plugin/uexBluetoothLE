@@ -102,7 +102,7 @@ GattServiceVO中的字段为：
 ```
   String uuid;
   
-  List<CharacteristicVO> characteristicVOs;
+  List<CharacteristicVO> characteristics;
 ```
 CharacteristicVO中得字段为：
 
@@ -115,7 +115,7 @@ int permissions;
 
 int writeType;
 
-List<GattDescriptorVO> gattDescriptorVOs;
+List<GattDescriptorVO> gattDescriptors;
 
 ```
 GattDescriptorVO中的字段为：

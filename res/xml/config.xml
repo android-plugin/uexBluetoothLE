@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
 	<plugin
-        className="org.zywx.wbpalmstar.plugin.uexbluetoothble.EUExBluetoothBLE" uexName="uexBluetoothBLE" >
+        className="org.zywx.wbpalmstar.plugin.uexbluetoothle.EUExBluetoothLE" uexName="uexBluetoothLE" >
         <method name="init"/>
-        <method name="connect"/>
+        <method name="connect"
+            type="1"/>
         <method name="disconnect"/>
         <method name="scanDevice"/>
         <method name="stopScanDevice"/>
@@ -21,5 +22,8 @@
             type="2"/>
         <method name="writeCharacteristic"/>
         <method name="readCharacteristic"/>
+        <method name="searchForCharacteristic"
+            type="1"/>
+
     </plugin>
 </uexplugins>
