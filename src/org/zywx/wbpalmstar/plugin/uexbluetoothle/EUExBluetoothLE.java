@@ -84,12 +84,14 @@ public class EUExBluetoothLE extends EUExBase {
 
     private void initMsg(String[] params) {
         mGson=new Gson();
-        String json = params[0];
+        String json;
         try {
-            JSONObject jsonObject = new JSONObject(json);
-            mCharFormat=jsonObject.optString("charFormat");
+            if (params!=null&&params.length>0) {
+                json = params[0];
+                JSONObject jsonObject = new JSONObject(json);
+                mCharFormat = jsonObject.optString("charFormat");
+            }
         } catch (JSONException e) {
-            e.printStackTrace();
         }
         if (mBluetoothManager == null) {
             mBluetoothManager = (BluetoothManager) mContext.
@@ -314,16 +316,17 @@ public class EUExBluetoothLE extends EUExBase {
     }
 
     private void scanDeviceMsg(String[] params) {
-        String json=params[0];
-        List<String> uuidStrings=mGson.fromJson(json,new TypeToken<List<String>>(){}.getType());
-        if (uuidStrings==null||uuidStrings.isEmpty()) {
-            mBluetoothAdapter.startLeScan(mLeScanCallback);
-        }else {
+        if (params!=null&&params.length>0) {
+            String json = params[0];
+            List<String> uuidStrings = mGson.fromJson(json, new TypeToken<List<String>>() {
+            }.getType());
             UUID[] uUIDs=new UUID[uuidStrings.size()];
             for (int i = 0; i < uuidStrings.size(); i++) {
                 uUIDs[i]=UUID.fromString(uuidStrings.get(i));
             }
             mBluetoothAdapter.startLeScan(uUIDs,mLeScanCallback);
+        }else{
+            mBluetoothAdapter.startLeScan(mLeScanCallback);
         }
     }
 
