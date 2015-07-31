@@ -24,6 +24,7 @@
         <method name="readCharacteristic"/>
         <method name="searchForCharacteristic"
             type="1"/>
-
+        <method name="searchForDescriptor"
+            type="1"/>
     </plugin>
 </uexplugins>

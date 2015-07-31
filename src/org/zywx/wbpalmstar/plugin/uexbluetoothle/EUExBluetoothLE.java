@@ -29,6 +29,8 @@ import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.CharacteristicVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.GattDescriptorVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.GattServiceVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.ResultVO;
+import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.SearchForCharacteristicInputVO;
+import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.SearchForDescriptorInputVO;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -47,6 +49,7 @@ public class EUExBluetoothLE extends EUExBase {
     private static final int MSG_WRITE_CHARACTERISTIC = 6;
     private static final int MSG_READ_CHARACTERISTIC = 7;
     private static final int MSG_SEARCH_FOR_CHARACTERISTIC = 8;
+    private static final int MSG_SEARCH_FOR_DESCRIPTOR = 9;
 
     private String mBluetoothDeviceAddress;
 
@@ -378,7 +381,7 @@ public class EUExBluetoothLE extends EUExBase {
             value=jsonObject.optString("value");
         } catch (JSONException e) {
         }
-        writeCharacteristicByUUID(serviceUUID,characteristicUUID,value);
+        writeCharacteristicByUUID(serviceUUID, characteristicUUID, value);
     }
 
     private void writeCharacteristicByUUID(String serviceUUID,String characteristicUUID,String value){
@@ -421,7 +424,7 @@ public class EUExBluetoothLE extends EUExBase {
             characteristicUUID=jsonObject.optString("characteristicUUID");
         } catch (JSONException e) {
         }
-        readCharacteristicByUUID(serviceUUID,characteristicUUID);
+        readCharacteristicByUUID(serviceUUID, characteristicUUID);
     }
 
     private void readCharacteristicByUUID(String serviceUUID,String characteristicUUID){
@@ -455,12 +458,63 @@ public class EUExBluetoothLE extends EUExBase {
 
     private void searchForCharacteristicMsg(String[] params) {
         String json = params[0];
+        List<BluetoothGattCharacteristic> characteristicList=new ArrayList<BluetoothGattCharacteristic>();
+        SearchForCharacteristicInputVO inputVO=mGson.fromJson(json,SearchForCharacteristicInputVO.class);
+        characteristicList=getServiceByID(inputVO.getServiceUUID()).getCharacteristics();
+        List<CharacteristicVO> characteristicVOs=new ArrayList<CharacteristicVO>();
+        if (characteristicList!=null){
+            for (BluetoothGattCharacteristic characteristic:characteristicList){
+                characteristicVOs.add(getDataFromCharacteristic(characteristic));
+            }
+        }
         JSONObject jsonResult = new JSONObject();
         try {
-            jsonResult.put("", "");
+            jsonResult.put("serviceUUID", inputVO.getServiceUUID());
+            jsonResult.put("characteristics",characteristicVOs);
         } catch (JSONException e) {
         }
         callBackPluginJs(JsConst.CALLBACK_SEARCH_FOR_CHARACTERISTIC, jsonResult.toString());
+    }
+
+    private BluetoothGattService getServiceByID(String UUID){
+        for (BluetoothGattService service:mGattServices){
+            if (service.getUuid().toString().equals(UUID)){
+                return  service;
+            }
+        }
+        return null;
+    }
+
+    private BluetoothGattCharacteristic getCharacteristicByID(String serviceUUID, String characteristicUUID){
+        return getServiceByID(serviceUUID).getCharacteristic(UUID.fromString(characteristicUUID));
+    }
+
+    public void searchForDescriptor(String[] params) {
+        if (params == null || params.length < 1) {
+            errorCallback(0, 0, "error params!");
+            return;
+        }
+        Message msg = new Message();
+        msg.obj = this;
+        msg.what = MSG_SEARCH_FOR_DESCRIPTOR;
+        Bundle bd = new Bundle();
+        bd.putStringArray(BUNDLE_DATA, params);
+        msg.setData(bd);
+        mHandler.sendMessage(msg);
+    }
+
+    private void searchForDescriptorMsg(String[] params) {
+        String json = params[0];
+        SearchForDescriptorInputVO inputVO=mGson.fromJson(json,SearchForDescriptorInputVO.class);
+        List<BluetoothGattDescriptor> descriptors=getCharacteristicByID(inputVO.getServiceUUID(),inputVO.getCharacteristicUUID()).getDescriptors();
+        JSONObject jsonResult = new JSONObject();
+        try {
+            jsonResult.put("serviceUUID", inputVO.getServiceUUID());
+            jsonResult.put("characteristicUUID",inputVO.getCharacteristicUUID());
+            jsonResult.put("descriptors",descriptors);
+        } catch (JSONException e) {
+        }
+        callBackPluginJs(JsConst.CALLBACK_SEARCH_FOR_DESCRIPTOR, jsonResult.toString());
     }
 
     @Override
@@ -494,6 +548,9 @@ public class EUExBluetoothLE extends EUExBase {
                 break;
             case MSG_SEARCH_FOR_CHARACTERISTIC:
                 searchForCharacteristicMsg(bundle.getStringArray(BUNDLE_DATA));
+                break;
+            case MSG_SEARCH_FOR_DESCRIPTOR:
+                searchForDescriptorMsg(bundle.getStringArray(BUNDLE_DATA));
                 break;
             default:
                 super.onHandleMessage(message);

@@ -9,4 +9,5 @@ public class JsConst {
     public static final String ON_LE_SCAN = "uexBluetoothLE.onLeScan";
     public static final String CALLBACK_CONNECT = "uexBluetoothLE.cbConnect";
     public static final String CALLBACK_SEARCH_FOR_CHARACTERISTIC = "uexBluetoothLE.cbSearchForCharacteristic";
+    public static final String CALLBACK_SEARCH_FOR_DESCRIPTOR = "uexBluetoothLE.cbSearchForDescriptor";
 }

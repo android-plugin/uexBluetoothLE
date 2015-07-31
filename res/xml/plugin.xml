@@ -11,5 +11,7 @@
         <method name="stopScanDevice" />
         <method name="writeCharacteristic" />
         <method name="readCharacteristic" />
+        <method name="searchForCharacteristic"/>
+        <method name="searchForDescriptor"/>
     </plugin>
 </uexplugins>
