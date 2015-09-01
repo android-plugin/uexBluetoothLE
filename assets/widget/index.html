@@ -12,7 +12,7 @@
 
         };
         var data = JSON.stringify(params);
-        uexBluetoothBLE.init(data);
+        uexBluetoothLE.init(data);
     }
 
     function connect(){
@@ -20,53 +20,50 @@
             address:"88:0F:10:87:28:47"
         };
         var data = JSON.stringify(params);
-        uexBluetoothBLE.connect(data);
+        uexBluetoothLE.connect(data);
     }
 
     function disconnect(){
         var params = {
         };
         var data = JSON.stringify(params);
-        uexBluetoothBLE.disconnect(data);
+        uexBluetoothLE.disconnect(data);
     }
 
     function scanDevice(){
-        var params = {
-        };
-        var data = JSON.stringify(params);
-        uexBluetoothBLE.scanDevice(data);
+        uexBluetoothLE.scanDevice();
     }
 
     function stopScanDevice(){
         var params = {
         };
         var data = JSON.stringify(params);
-        uexBluetoothBLE.stopScanDevice(data);
+        uexBluetoothLE.stopScanDevice(data);
     }
 
     function writeCharacteristic(){
         var params = {
         };
         var data = JSON.stringify(params);
-        uexBluetoothBLE.writeCharacteristic(data);
+        uexBluetoothLE.writeCharacteristic(data);
     }
 
     function readCharacteristic(){
         var params = {
         };
         var data = JSON.stringify(params);
-        uexBluetoothBLE.readCharacteristic(data);
+        uexBluetoothLE.readCharacteristic(data);
     }
 
 
         window.uexOnload = function(type){
             if(type == 0){
-            uexBluetoothBLE.onLeScan = onLeScan;
-            uexBluetoothBLE.onConnectionStateChange = onConnectionStateChange;
-            uexBluetoothBLE.onServicesDiscovered = onServicesDiscovered;
-            uexBluetoothBLE.onCharacteristicRead = onCharacteristicRead;
-            uexBluetoothBLE.onCharacteristicChanged = onCharacteristicChanged;
-            uexBluetoothBLE.onCharacteristicWrite = onCharacteristicWrite;
+            uexBluetoothLE.onLeScan = onLeScan;
+            uexBluetoothLE.onConnectionStateChange = onConnectionStateChange;
+            uexBluetoothLE.onServicesDiscovered = onServicesDiscovered;
+            uexBluetoothLE.onCharacteristicRead = onCharacteristicRead;
+            uexBluetoothLE.onCharacteristicChanged = onCharacteristicChanged;
+            uexBluetoothLE.onCharacteristicWrite = onCharacteristicWrite;
 
             }
         }
@@ -100,7 +97,7 @@
 </head>
 
 <body>
-<div class="tit">uexBluetoothBLE</div>
+<div class="tit">uexBluetoothLE</div>
 <div class="conbor">
     <div class="consj">
             <input class='btn' type='button' value='init' onclick='init()'>
