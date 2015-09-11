@@ -113,7 +113,7 @@ public class EUExBluetoothLE extends EUExBase {
         }
         ResultVO resultVO=new ResultVO();
         resultVO.setResultCode(ResultVO.RESULT_OK);
-        callBackPluginJs(JsConst.ON_CHARACTERISTIC_WRITE, mGson.toJson(resultVO));
+        callBackPluginJs(JsConst.CALLBACK_INIT, mGson.toJson(resultVO));
         Log.i(TAG, "plugin init");
     }
 
