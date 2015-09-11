@@ -13,5 +13,7 @@
         <method name="readCharacteristic" />
         <method name="searchForCharacteristic"/>
         <method name="searchForDescriptor"/>
+        <method name="readDescriptor"/>
+        <method name="writeDescriptor"/>
     </plugin>
 </uexplugins>

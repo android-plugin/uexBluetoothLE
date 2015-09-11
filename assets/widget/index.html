@@ -9,7 +9,6 @@
     <script type="text/javascript">
     function init(){
         var params = {
-
         };
         var data = JSON.stringify(params);
         uexBluetoothLE.init(data);
@@ -17,7 +16,6 @@
 
     function connect(){
         var params = {
-            address:"88:0F:10:87:28:47"
         };
         var data = JSON.stringify(params);
         uexBluetoothLE.connect(data);
@@ -55,41 +53,96 @@
         uexBluetoothLE.readCharacteristic(data);
     }
 
+    function searchForCharacteristic(){
+        var params = {
+        };
+        var data = JSON.stringify(params);
+        uexBluetoothLE.searchForCharacteristic(data);
+    }
+
+    function searchForDescriptor(){
+        var params = {
+        };
+        var data = JSON.stringify(params);
+        uexBluetoothLE.searchForDescriptor(data);
+    }
+
+    function readDescriptor(){
+        var params = {
+        };
+        var data = JSON.stringify(params);
+        uexBluetoothLE.readDescriptor(data);
+    }
+
+    function writeDescriptor(){
+        var params = {
+        };
+        var data = JSON.stringify(params);
+        uexBluetoothLE.writeDescriptor(data);
+    }
+
 
         window.uexOnload = function(type){
             if(type == 0){
+            uexBluetoothLE.cbConnect = cbConnect;
             uexBluetoothLE.onLeScan = onLeScan;
             uexBluetoothLE.onConnectionStateChange = onConnectionStateChange;
             uexBluetoothLE.onServicesDiscovered = onServicesDiscovered;
-            uexBluetoothLE.onCharacteristicRead = onCharacteristicRead;
+            uexBluetoothLE.cbCharacteristicRead = onCharacteristicRead;
             uexBluetoothLE.onCharacteristicChanged = onCharacteristicChanged;
-            uexBluetoothLE.onCharacteristicWrite = onCharacteristicWrite;
+            uexBluetoothLE.cbCharacteristicWrite = onCharacteristicWrite;
+            uexBluetoothLE.cbSearchForCharacteristic = cbSearchForCharacteristic;
+            uexBluetoothLE.cbSearchForDescriptor = cbSearchForDescriptor;
+            uexBluetoothLE.cbReadDescriptor = cbReadDescriptor;
+            uexBluetoothLE.cbWriteDescriptor = cbWriteDescriptor;
+            uexBluetoothLE.cbInit = cbInit;
 
             }
         }
+    function cbConnect(info){
+        alert(info);
+    }
+ function cbInit(info){
+        alert(info);
+    }
     function onLeScan(info){
-        console.log(info);
         alert(info);
     }
 
     function onConnectionStateChange(info){
-        alert("onConnectionStateChange "+info);
+        alert(info);
     }
 
     function onServicesDiscovered(info){
-        alert("onServicesDiscovered "+info);
+        alert(info);
     }
 
     function onCharacteristicRead(info){
-        alert("onCharacteristicRead "+info);
+        alert(info);
     }
 
     function onCharacteristicChanged(info){
-        alert("onCharacteristicChanged "+info);
+        alert(info);
     }
 
     function onCharacteristicWrite(info){
-        alert("onCharacteristicWrite "+info);
+        alert(info);
+    }
+
+    function cbSearchForCharacteristic(info){
+        alert(info);
+    }
+
+    function cbSearchForDescriptor(info){
+        alert(info);
+    }
+
+    function cbReadDescriptor(info){
+        alert(info);
+    }
+
+    function cbWriteDescriptor(info){
+        alert(info);
     }
 
 
@@ -113,6 +166,14 @@
             <input class='btn' type='button' value='writeCharacteristic' onclick='writeCharacteristic()'>
 
             <input class='btn' type='button' value='readCharacteristic' onclick='readCharacteristic()'>
+
+            <input class='btn' type='button' value='searchForCharacteristic' onclick='searchForCharacteristic()'>
+
+            <input class='btn' type='button' value='searchForDescriptor' onclick='searchForDescriptor()'>
+
+            <input class='btn' type='button' value='readDescriptor' onclick='readDescriptor()'>
+
+            <input class='btn' type='button' value='writeDescriptor' onclick='writeDescriptor()'>
 
 
     </div>

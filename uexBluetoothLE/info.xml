@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
-    <plugin uexName="uexBluetoothLE" version="3.0.0" build="0">
-        <info>0:蓝牙BLE插件</info>
+    <plugin uexName="uexBluetoothLE" version="3.0.1" build="1">
+        <info>1:js接口数据传输用Base64编码</info>
+        <build>0:蓝牙BLE插件</build>
     </plugin>
 </uexplugins>

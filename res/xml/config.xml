@@ -26,5 +26,10 @@
             type="1"/>
         <method name="searchForDescriptor"
             type="1"/>
+
+        <method name="readDescriptor"
+            type="1"/>
+        <method name="writeDescriptor"
+            type="1"/>
     </plugin>
 </uexplugins>

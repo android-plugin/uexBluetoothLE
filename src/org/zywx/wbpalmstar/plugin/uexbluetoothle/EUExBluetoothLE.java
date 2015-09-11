@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.util.Log;
 
 import com.google.gson.Gson;
@@ -28,11 +29,11 @@ import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.BluetoothDeviceVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.CharacteristicVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.GattDescriptorVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.GattServiceVO;
+import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.DescriptorInputVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.ResultVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.SearchForCharacteristicInputVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.SearchForDescriptorInputVO;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -50,6 +51,8 @@ public class EUExBluetoothLE extends EUExBase {
     private static final int MSG_READ_CHARACTERISTIC = 7;
     private static final int MSG_SEARCH_FOR_CHARACTERISTIC = 8;
     private static final int MSG_SEARCH_FOR_DESCRIPTOR = 9;
+    private static final int MSG_READ_DESCRIPTOR = 10;
+    private static final int MSG_WRITE_DESCRIPTOR = 11;
 
     private String mBluetoothDeviceAddress;
 
@@ -108,6 +111,9 @@ public class EUExBluetoothLE extends EUExBase {
         if (mBluetoothAdapter == null) {
 
         }
+        ResultVO resultVO=new ResultVO();
+        resultVO.setResultCode(ResultVO.RESULT_OK);
+        callBackPluginJs(JsConst.ON_CHARACTERISTIC_WRITE, mGson.toJson(resultVO));
         Log.i(TAG, "plugin init");
     }
 
@@ -157,26 +163,41 @@ public class EUExBluetoothLE extends EUExBase {
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            ResultVO resultVO=new ResultVO();
+            ResultVO<CharacteristicVO> resultVO=new ResultVO<CharacteristicVO>();
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 resultVO.setResultCode(ResultVO.RESULT_OK);
+                resultVO.setData(getDataFromCharacteristic(characteristic));
             }else if (status==BluetoothGatt.GATT_FAILURE){
                 resultVO.setResultCode(ResultVO.RESULT_FAILD);
             }
-            resultVO.setData(getDataFromCharacteristic(characteristic));
             callBackPluginJs(JsConst.ON_CHARACTERISTIC_WRITE, mGson.toJson(resultVO));
         }
 
         @Override
         public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorRead(gatt, descriptor, status);
-
+            ResultVO resultVO=new ResultVO();
+            if (status==BluetoothGatt.GATT_SUCCESS){
+                resultVO.setResultCode(ResultVO.RESULT_OK);
+                resultVO.setData(transfromDescriptor(descriptor));
+            }else{
+                resultVO.setResultCode(ResultVO.RESULT_FAILD);
+            }
+            callBackPluginJs(JsConst.CALLBACK_READ_DESCRIPTOR,mGson.toJson(resultVO));
         }
 
 
         @Override
         public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
             super.onDescriptorWrite(gatt, descriptor, status);
+            ResultVO resultVO=new ResultVO();
+            if (status==BluetoothGatt.GATT_SUCCESS){
+                resultVO.setResultCode(ResultVO.RESULT_OK);
+                resultVO.setData(transfromDescriptor(descriptor));
+            }else{
+                resultVO.setResultCode(ResultVO.RESULT_FAILD);
+            }
+            callBackPluginJs(JsConst.CALLBACK_WRITE_DESCRIPTOR, mGson.toJson(resultVO));
         }
 
     };
@@ -218,11 +239,7 @@ public class EUExBluetoothLE extends EUExBase {
                 }
                 characteristicVO.setValueString(stringBuilder.toString());
             } else {
-                try {
-                    characteristicVO.setValueString(new String(data, "UTF-8"));
-                } catch (UnsupportedEncodingException e) {
-                    Log.e("appcan", e.toString());
-                }
+                characteristicVO.setValueString(Base64.encodeToString(data,Base64.DEFAULT));
             }
         }
         characteristicVO.setPermissions(characteristic.getPermissions());
@@ -245,7 +262,7 @@ public class EUExBluetoothLE extends EUExBase {
             gattDescriptorVO.setUuid(descriptor.getUuid().toString());
         }
         if (descriptor.getValue()!=null) {
-            gattDescriptorVO.setValue(descriptor.getValue().toString());
+            gattDescriptorVO.setValue(Base64.encodeToString(descriptor.getValue(), Base64.DEFAULT));
         }
         gattDescriptorVO.setPermissions(descriptor.getPermissions());
         return gattDescriptorVO;
@@ -393,7 +410,7 @@ public class EUExBluetoothLE extends EUExBase {
             if (serviceUUID.equals(bluetoothGattService.getUuid().toString())){
                 BluetoothGattCharacteristic gattCharacteristic=bluetoothGattService.
                         getCharacteristic(UUID.fromString(characteristicUUID));
-                gattCharacteristic.setValue(value);
+                gattCharacteristic.setValue(Base64.decode(value,Base64.DEFAULT));
                 mBluetoothGatt.writeCharacteristic(gattCharacteristic);
                break;
             }
@@ -517,6 +534,55 @@ public class EUExBluetoothLE extends EUExBase {
         callBackPluginJs(JsConst.CALLBACK_SEARCH_FOR_DESCRIPTOR, jsonResult.toString());
     }
 
+    public void readDescriptor(String[] params) {
+        if (params == null || params.length < 1) {
+            errorCallback(0, 0, "error params!");
+            return;
+        }
+        Message msg = new Message();
+        msg.obj = this;
+        msg.what = MSG_READ_DESCRIPTOR;
+        Bundle bd = new Bundle();
+        bd.putStringArray(BUNDLE_DATA, params);
+        msg.setData(bd);
+        mHandler.sendMessage(msg);
+    }
+
+    private void readDescriptorMsg(String[] params) {
+        String json = params[0];
+        DescriptorInputVO inputVO=mGson.fromJson(json,DescriptorInputVO.class);
+        BluetoothGattDescriptor descriptor = getCharacteristicByID(inputVO.getServiceUUID(), inputVO
+                .getCharacteristicUUID())
+                .getDescriptor(UUID
+                        .fromString(inputVO.getDescriptorUUID()));
+        mBluetoothGatt.readDescriptor(descriptor);
+    }
+
+    public void writeDescriptor(String[] params) {
+        if (params == null || params.length < 1) {
+            errorCallback(0, 0, "error params!");
+            return;
+        }
+        Message msg = new Message();
+        msg.obj = this;
+        msg.what = MSG_WRITE_DESCRIPTOR;
+        Bundle bd = new Bundle();
+        bd.putStringArray(BUNDLE_DATA, params);
+        msg.setData(bd);
+        mHandler.sendMessage(msg);
+    }
+
+    private void writeDescriptorMsg(String[] params) {
+        String json = params[0];
+        DescriptorInputVO inputVO=mGson.fromJson(json,DescriptorInputVO.class);
+        BluetoothGattDescriptor descriptor=getCharacteristicByID(inputVO.getServiceUUID(),inputVO
+                .getCharacteristicUUID())
+                .getDescriptor(UUID
+                        .fromString(inputVO.getDescriptorUUID()));
+        descriptor.setValue(Base64.decode(inputVO.getValue(), Base64.DEFAULT));
+        mBluetoothGatt.writeDescriptor(descriptor);
+    }
+
     @Override
     public void onHandleMessage(Message message) {
         if(message == null){
@@ -551,6 +617,12 @@ public class EUExBluetoothLE extends EUExBase {
                 break;
             case MSG_SEARCH_FOR_DESCRIPTOR:
                 searchForDescriptorMsg(bundle.getStringArray(BUNDLE_DATA));
+                break;
+            case MSG_READ_DESCRIPTOR:
+                readDescriptorMsg(bundle.getStringArray(BUNDLE_DATA));
+                break;
+            case MSG_WRITE_DESCRIPTOR:
+                writeDescriptorMsg(bundle.getStringArray(BUNDLE_DATA));
                 break;
             default:
                 super.onHandleMessage(message);
