@@ -1,35 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
-	<plugin
-        className="org.zywx.wbpalmstar.plugin.uexbluetoothle.EUExBluetoothLE" uexName="uexBluetoothLE" >
+    <plugin
+        className="org.zywx.wbpalmstar.plugin.uexbluetoothle.EUExBluetoothLE"
+        uexName="uexBluetoothLE">
         <method name="init"/>
-        <method name="connect"
+        <method
+            name="connect"
             type="1"/>
         <method name="disconnect"/>
         <method name="scanDevice"/>
         <method name="stopScanDevice"/>
-        <method name="onLeScan"
+        <method
+            name="onLeScan"
             type="2"/>
-        <method name="onConnectionStateChange"
+        <method
+            name="onConnectionStateChange"
             type="2"/>
-        <method name="onServicesDiscovered"
+        <method
+            name="onServicesDiscovered"
             type="2"/>
-        <method name="onCharacteristicRead"
+        <method
+            name="onCharacteristicRead"
             type="2"/>
-        <method name="onCharacteristicChanged"
+        <method
+            name="onCharacteristicChanged"
             type="2"/>
-        <method name="onCharacteristicWrite"
+        <method
+            name="onCharacteristicWrite"
             type="2"/>
         <method name="writeCharacteristic"/>
         <method name="readCharacteristic"/>
-        <method name="searchForCharacteristic"
+        <method
+            name="searchForCharacteristic"
             type="1"/>
-        <method name="searchForDescriptor"
+        <method
+            name="searchForDescriptor"
             type="1"/>
 
-        <method name="readDescriptor"
+        <method
+            name="readDescriptor"
             type="1"/>
-        <method name="writeDescriptor"
+        <method
+            name="writeDescriptor"
             type="1"/>
     </plugin>
 </uexplugins>

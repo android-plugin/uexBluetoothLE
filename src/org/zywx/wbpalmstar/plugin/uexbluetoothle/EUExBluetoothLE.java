@@ -1,6 +1,7 @@
 package org.zywx.wbpalmstar.plugin.uexbluetoothle;
 
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -11,6 +12,7 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
@@ -23,13 +25,14 @@ import com.google.gson.reflect.TypeToken;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.zywx.wbpalmstar.base.BDebug;
 import org.zywx.wbpalmstar.engine.EBrowserView;
 import org.zywx.wbpalmstar.engine.universalex.EUExBase;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.BluetoothDeviceVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.CharacteristicVO;
-import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.GattDescriptorVO;
-import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.GattServiceVO;
+import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.ConnectedVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.DescriptorInputVO;
+import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.GattDescriptorVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.ResultVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.SearchForCharacteristicInputVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.SearchForDescriptorInputVO;
@@ -67,6 +70,7 @@ public class EUExBluetoothLE extends EUExBase {
     private static final String TAG="appcan";
 
     private EBrowserView mCallbackView;
+    private static final int REQUEST_ENABLE_BT=1;
 
     public EUExBluetoothLE(Context context, EBrowserView eBrowserView) {
         super(context, eBrowserView);
@@ -108,13 +112,32 @@ public class EUExBluetoothLE extends EUExBase {
         }
         mCallbackView=mBrwView;
         mBluetoothAdapter = mBluetoothManager.getAdapter();
-        if (mBluetoothAdapter == null) {
-
+        // 确保蓝牙在设备上可以开启
+        if (mBluetoothAdapter == null || !mBluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }else{
+            callBackResult(true);
         }
-        ResultVO resultVO=new ResultVO();
-        resultVO.setResultCode(ResultVO.RESULT_OK);
-        callBackPluginJs(JsConst.CALLBACK_INIT, mGson.toJson(resultVO));
         Log.i(TAG, "plugin init");
+    }
+
+    private void callBackResult(boolean result){
+        ResultVO resultVO=new ResultVO();
+        resultVO.setResultCode(result?ResultVO.RESULT_OK:ResultVO.RESULT_FAILD);
+        callBackPluginJs(JsConst.CALLBACK_INIT, mGson.toJson(resultVO));
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode==REQUEST_ENABLE_BT){
+            if (resultCode== Activity.RESULT_OK){
+                callBackResult(true);
+            }else {
+                callBackResult(false);
+            }
+        }
     }
 
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
@@ -207,25 +230,16 @@ public class EUExBluetoothLE extends EUExBase {
     // on the UI.
     private void displayGattServices(List<BluetoothGattService> gattServices) throws InterruptedException {
         if (gattServices == null) return;
-        List<GattServiceVO> gattServiceVOs=new ArrayList<GattServiceVO>();
+        List<String> serviceUUIDs=new ArrayList<String>();
         // Loops through available GATT Services.
         for (BluetoothGattService gattService : gattServices) {
-            GattServiceVO gattServiceVO=new GattServiceVO();
             String uuid = gattService.getUuid().toString();
-            gattServiceVO.setUuid(uuid);
-            List<CharacteristicVO> characteristicVOs=new ArrayList<CharacteristicVO>();
-            List<BluetoothGattCharacteristic> gattCharacteristics = gattService.getCharacteristics();
-            // Loops through available Characteristics.
-            for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
-                mBluetoothGatt.setCharacteristicNotification(gattCharacteristic, true);
-                characteristicVOs.add(getDataFromCharacteristic(gattCharacteristic));
-                Thread.sleep(200);
-            }
-            gattServiceVO.setCharacteristics(characteristicVOs);
-            gattServiceVOs.add(gattServiceVO);
+            serviceUUIDs.add(uuid);
         }
-        Log.i(TAG,mGson.toJson(gattServiceVOs));
-        callBackPluginJs(JsConst.ON_SERVICES_DISCOVERED, mGson.toJson(gattServiceVOs));
+        ConnectedVO connectedVO=new ConnectedVO();
+        connectedVO.services=serviceUUIDs;
+        BDebug.i(TAG,mGson.toJson(connectedVO));
+        callBackPluginJs(JsConst.CALLBACK_CONNECT, mGson.toJson(connectedVO));
     }
 
     public CharacteristicVO getDataFromCharacteristic(BluetoothGattCharacteristic characteristic){

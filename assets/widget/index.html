@@ -16,6 +16,7 @@
 
     function connect(){
         var params = {
+          address:"53:9e:06:7e:2e:9d"
         };
         var data = JSON.stringify(params);
         uexBluetoothLE.connect(data);
@@ -116,7 +117,6 @@
     function onServicesDiscovered(info){
         alert(info);
     }
-
     function onCharacteristicRead(info){
         alert(info);
     }
