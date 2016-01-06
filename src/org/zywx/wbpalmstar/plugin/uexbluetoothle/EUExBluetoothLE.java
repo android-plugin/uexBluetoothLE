@@ -35,7 +35,9 @@ import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.DescriptorInputVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.GattDescriptorVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.ResultVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.SearchForCharacteristicInputVO;
+import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.SearchForCharacteristicOutputVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.SearchForDescriptorInputVO;
+import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.SearchForDescriptorOutputVO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -498,13 +500,10 @@ public class EUExBluetoothLE extends EUExBase {
                 characteristicVOs.add(getDataFromCharacteristic(characteristic));
             }
         }
-        JSONObject jsonResult = new JSONObject();
-        try {
-            jsonResult.put("serviceUUID", inputVO.getServiceUUID());
-            jsonResult.put("characteristics",characteristicVOs);
-        } catch (JSONException e) {
-        }
-        callBackPluginJs(JsConst.CALLBACK_SEARCH_FOR_CHARACTERISTIC, jsonResult.toString());
+        SearchForCharacteristicOutputVO outputVO=new SearchForCharacteristicOutputVO();
+        outputVO.setServiceUUID(inputVO.getServiceUUID());
+        outputVO.setCharacteristics(characteristicVOs);
+        callBackPluginJs(JsConst.CALLBACK_SEARCH_FOR_CHARACTERISTIC, mGson.toJson(outputVO));
     }
 
     private BluetoothGattService getServiceByID(String UUID){
@@ -538,14 +537,11 @@ public class EUExBluetoothLE extends EUExBase {
         String json = params[0];
         SearchForDescriptorInputVO inputVO=mGson.fromJson(json,SearchForDescriptorInputVO.class);
         List<BluetoothGattDescriptor> descriptors=getCharacteristicByID(inputVO.getServiceUUID(),inputVO.getCharacteristicUUID()).getDescriptors();
-        JSONObject jsonResult = new JSONObject();
-        try {
-            jsonResult.put("serviceUUID", inputVO.getServiceUUID());
-            jsonResult.put("characteristicUUID",inputVO.getCharacteristicUUID());
-            jsonResult.put("descriptors",descriptors);
-        } catch (JSONException e) {
-        }
-        callBackPluginJs(JsConst.CALLBACK_SEARCH_FOR_DESCRIPTOR, jsonResult.toString());
+        SearchForDescriptorOutputVO outputVO=new SearchForDescriptorOutputVO();
+        outputVO.setServiceUUID(inputVO.getServiceUUID());
+        outputVO.setCharacteristicUUID(inputVO.getCharacteristicUUID());
+        outputVO.setDescriptors(descriptors);
+        callBackPluginJs(JsConst.CALLBACK_SEARCH_FOR_DESCRIPTOR, mGson.toJson(outputVO));
     }
 
     public void readDescriptor(String[] params) {

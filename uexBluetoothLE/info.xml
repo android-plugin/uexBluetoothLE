@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
-    <plugin uexName="uexBluetoothLE" version="3.0.2" build="2">
-        <info>2:init时自动调用开启蓝牙</info>
+    <plugin uexName="uexBluetoothLE" version="3.0.3" build="3">
+        <info>3:修正回调数据不正确的问题</info>
+        <build>2:init时自动调用开启蓝牙</build>
         <build>1:js接口数据传输用Base64编码</build>
         <build>0:蓝牙BLE插件</build>
     </plugin>
