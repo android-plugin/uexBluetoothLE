@@ -8,18 +8,23 @@ import java.io.Serializable;
 public class GattDescriptorVO implements Serializable {
     private static final long serialVersionUID = -1668957615902445914L;
 
-    private  String uuid;
+    private String serviceUUID;
+    private String characteristicUUID;
+
+
+    private  String UUID;
 
     private String value;
+    private boolean needDecode;
 
     private int permissions;
 
-    public String getUuid() {
-        return uuid;
+    public String getUUID() {
+        return UUID;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void setUUID(String UUID) {
+        this.UUID = UUID;
     }
 
     public String getValue() {
@@ -36,5 +41,29 @@ public class GattDescriptorVO implements Serializable {
 
     public void setPermissions(int permissions) {
         this.permissions = permissions;
+    }
+
+    public boolean isNeedDecode() {
+        return needDecode;
+    }
+
+    public void setNeedDecode(boolean needDecode) {
+        this.needDecode = needDecode;
+    }
+
+    public String getCharacteristicUUID() {
+        return characteristicUUID;
+    }
+
+    public void setCharacteristicUUID(String characteristicUUID) {
+        this.characteristicUUID = characteristicUUID;
+    }
+
+    public String getServiceUUID() {
+        return serviceUUID;
+    }
+
+    public void setServiceUUID(String serviceUUID) {
+        this.serviceUUID = serviceUUID;
     }
 }

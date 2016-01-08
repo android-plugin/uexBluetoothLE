@@ -19,8 +19,6 @@
 
 package org.zywx.wbpalmstar.plugin.uexbluetoothle.vo;
 
-import android.bluetooth.BluetoothGattDescriptor;
-
 import java.io.Serializable;
 import java.util.List;
 
@@ -31,7 +29,7 @@ public class SearchForDescriptorOutputVO implements Serializable {
 
     private String serviceUUID;
     private String characteristicUUID;
-    private List<BluetoothGattDescriptor> descriptors;
+    private List<GattDescriptorVO> descriptors;
 
     public String getServiceUUID() {
         return serviceUUID;
@@ -49,11 +47,11 @@ public class SearchForDescriptorOutputVO implements Serializable {
         this.characteristicUUID = characteristicUUID;
     }
 
-    public List<BluetoothGattDescriptor> getDescriptors() {
+    public List<GattDescriptorVO> getDescriptors() {
         return descriptors;
     }
 
-    public void setDescriptors(List<BluetoothGattDescriptor> descriptors) {
+    public void setDescriptors(List<GattDescriptorVO> descriptors) {
         this.descriptors = descriptors;
     }
 }

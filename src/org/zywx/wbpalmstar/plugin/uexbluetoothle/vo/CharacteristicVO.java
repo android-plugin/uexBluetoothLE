@@ -9,37 +9,37 @@ import java.util.List;
 public class CharacteristicVO implements Serializable {
 
     private static final long serialVersionUID = -5993349996621831752L;
-    private String valueString;
-    private String uuid;
-
+    private String value;
+    private String UUID;
+    private String serviceUUID;
+    private boolean needDecode;
     private int permissions;
-
     private int writeType;
 
-    private List<GattDescriptorVO> gattDescriptors;
+    private List<GattDescriptorVO> descriptors;
 
-    public String getValueString() {
-        return valueString;
+    public String getValue() {
+        return value;
     }
 
-    public void setValueString(String valueString) {
-        this.valueString = valueString;
+    public void setValue(String value) {
+        this.value = value;
     }
 
-    public String getUuid() {
-        return uuid;
+    public String getUUID() {
+        return UUID;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void setUUID(String UUID) {
+        this.UUID = UUID;
     }
 
-    public List<GattDescriptorVO> getGattDescriptors() {
-        return gattDescriptors;
+    public List<GattDescriptorVO> getDescriptors() {
+        return descriptors;
     }
 
-    public void setGattDescriptors(List<GattDescriptorVO> gattDescriptors) {
-        this.gattDescriptors = gattDescriptors;
+    public void setDescriptors(List<GattDescriptorVO> descriptors) {
+        this.descriptors = descriptors;
     }
 
     public int getPermissions() {
@@ -56,5 +56,21 @@ public class CharacteristicVO implements Serializable {
 
     public void setWriteType(int writeType) {
         this.writeType = writeType;
+    }
+
+    public boolean isNeedDecode() {
+        return needDecode;
+    }
+
+    public void setNeedDecode(boolean needDecode) {
+        this.needDecode = needDecode;
+    }
+
+    public String getServiceUUID() {
+        return serviceUUID;
+    }
+
+    public void setServiceUUID(String serviceUUID) {
+        this.serviceUUID = serviceUUID;
     }
 }

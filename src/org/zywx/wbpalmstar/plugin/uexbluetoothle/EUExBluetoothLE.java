@@ -177,13 +177,13 @@ public class EUExBluetoothLE extends EUExBase {
             }else if (status==BluetoothGatt.GATT_FAILURE){
                 resultVO.setResultCode(ResultVO.RESULT_FAILD);
             }
-            resultVO.setData(getDataFromCharacteristic(characteristic));
+            resultVO.setData(transformDataFromCharacteristic(characteristic));
             callBackPluginJs(JsConst.ON_CHARACTERISTIC_READ, mGson.toJson(resultVO));
         }
 
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-            callBackPluginJs(JsConst.ON_CHARACTERISTIC_CHANGED,mGson.toJson(getDataFromCharacteristic(characteristic)));
+            callBackPluginJs(JsConst.ON_CHARACTERISTIC_CHANGED,mGson.toJson(transformDataFromCharacteristic(characteristic)));
         }
 
         @Override
@@ -191,7 +191,7 @@ public class EUExBluetoothLE extends EUExBase {
             ResultVO<CharacteristicVO> resultVO=new ResultVO<CharacteristicVO>();
             if (status == BluetoothGatt.GATT_SUCCESS) {
                 resultVO.setResultCode(ResultVO.RESULT_OK);
-                resultVO.setData(getDataFromCharacteristic(characteristic));
+                resultVO.setData(transformDataFromCharacteristic(characteristic));
             }else if (status==BluetoothGatt.GATT_FAILURE){
                 resultVO.setResultCode(ResultVO.RESULT_FAILD);
             }
@@ -244,7 +244,7 @@ public class EUExBluetoothLE extends EUExBase {
         callBackPluginJs(JsConst.CALLBACK_CONNECT, mGson.toJson(connectedVO));
     }
 
-    public CharacteristicVO getDataFromCharacteristic(BluetoothGattCharacteristic characteristic){
+    public CharacteristicVO transformDataFromCharacteristic(BluetoothGattCharacteristic characteristic){
         CharacteristicVO characteristicVO=new CharacteristicVO();
         final byte[] data=characteristic.getValue();
         if (data!=null) {
@@ -253,14 +253,17 @@ public class EUExBluetoothLE extends EUExBase {
                 for (byte byteChar : data) {
                     stringBuilder.append(String.format(mCharFormat, byteChar));
                 }
-                characteristicVO.setValueString(stringBuilder.toString());
+                characteristicVO.setValue(stringBuilder.toString());
+                characteristicVO.setNeedDecode(false);
             } else {
-                characteristicVO.setValueString(Base64.encodeToString(data,Base64.DEFAULT));
+                characteristicVO.setValue(Base64.encodeToString(data,Base64.DEFAULT));
+                characteristicVO.setNeedDecode(true);
             }
         }
         characteristicVO.setPermissions(characteristic.getPermissions());
         characteristicVO.setWriteType(characteristic.getWriteType());
-        characteristicVO.setUuid(characteristic.getUuid().toString());
+        characteristicVO.setUUID(characteristic.getUuid().toString());
+        characteristicVO.setServiceUUID(characteristic.getService().getUuid().toString());
         List<BluetoothGattDescriptor> descriptors=characteristic.getDescriptors();
         List<GattDescriptorVO> gattDescriptorVOs=new ArrayList<GattDescriptorVO>();
         if (descriptors!=null&&!descriptors.isEmpty()){
@@ -268,18 +271,21 @@ public class EUExBluetoothLE extends EUExBase {
                 gattDescriptorVOs.add(transfromDescriptor(descriptor));
             }
         }
-        characteristicVO.setGattDescriptors(gattDescriptorVOs);
+        characteristicVO.setDescriptors(gattDescriptorVOs);
         return characteristicVO;
     }
 
     private GattDescriptorVO transfromDescriptor(BluetoothGattDescriptor descriptor){
         GattDescriptorVO gattDescriptorVO=new GattDescriptorVO();
         if (descriptor.getUuid()!=null) {
-            gattDescriptorVO.setUuid(descriptor.getUuid().toString());
+            gattDescriptorVO.setUUID(descriptor.getUuid().toString());
         }
         if (descriptor.getValue()!=null) {
             gattDescriptorVO.setValue(Base64.encodeToString(descriptor.getValue(), Base64.DEFAULT));
+            gattDescriptorVO.setNeedDecode(true);
         }
+        gattDescriptorVO.setServiceUUID(descriptor.getCharacteristic().getService().getUuid().toString());
+        gattDescriptorVO.setCharacteristicUUID(descriptor.getCharacteristic().getUuid().toString());
         gattDescriptorVO.setPermissions(descriptor.getPermissions());
         return gattDescriptorVO;
     }
@@ -497,7 +503,7 @@ public class EUExBluetoothLE extends EUExBase {
         List<CharacteristicVO> characteristicVOs=new ArrayList<CharacteristicVO>();
         if (characteristicList!=null){
             for (BluetoothGattCharacteristic characteristic:characteristicList){
-                characteristicVOs.add(getDataFromCharacteristic(characteristic));
+                characteristicVOs.add(transformDataFromCharacteristic(characteristic));
             }
         }
         SearchForCharacteristicOutputVO outputVO=new SearchForCharacteristicOutputVO();
@@ -535,12 +541,18 @@ public class EUExBluetoothLE extends EUExBase {
 
     private void searchForDescriptorMsg(String[] params) {
         String json = params[0];
+        List<GattDescriptorVO> descriptorVOs=new ArrayList<GattDescriptorVO>();
         SearchForDescriptorInputVO inputVO=mGson.fromJson(json,SearchForDescriptorInputVO.class);
         List<BluetoothGattDescriptor> descriptors=getCharacteristicByID(inputVO.getServiceUUID(),inputVO.getCharacteristicUUID()).getDescriptors();
+        if (descriptors!=null){
+            for (BluetoothGattDescriptor descriptor:descriptors){
+                descriptorVOs.add(transfromDescriptor(descriptor));
+            }
+        }
         SearchForDescriptorOutputVO outputVO=new SearchForDescriptorOutputVO();
         outputVO.setServiceUUID(inputVO.getServiceUUID());
         outputVO.setCharacteristicUUID(inputVO.getCharacteristicUUID());
-        outputVO.setDescriptors(descriptors);
+        outputVO.setDescriptors(descriptorVOs);
         callBackPluginJs(JsConst.CALLBACK_SEARCH_FOR_DESCRIPTOR, mGson.toJson(outputVO));
     }
 
