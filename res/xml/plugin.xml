@@ -4,9 +4,11 @@
         className="org.zywx.wbpalmstar.plugin.uexbluetoothle.EUExBluetoothLE"
         uexName="uexBluetoothLE"
         global="true">
-        <method name="init" />
-        <method name="connect" />
-        <method name="disconnect" />
+        <method name="init"/>
+        <method name="readRemoteRssi" />
+        <method name="setCharacteristicNotification" />
+        <method name="connect"/>
+        <method name="disconnect"/>
         <method name="scanDevice" />
         <method name="stopScanDevice" />
         <method name="writeCharacteristic" />

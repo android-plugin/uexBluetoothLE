@@ -33,11 +33,13 @@ import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.CharacteristicVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.ConnectedVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.DescriptorInputVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.GattDescriptorVO;
+import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.ReadRemoteRssiVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.ResultVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.SearchForCharacteristicInputVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.SearchForCharacteristicOutputVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.SearchForDescriptorInputVO;
 import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.SearchForDescriptorOutputVO;
+import org.zywx.wbpalmstar.plugin.uexbluetoothle.vo.SetCharacteristicNotificationInputVO;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -153,6 +155,7 @@ public class EUExBluetoothLE extends EUExBase {
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 resultVO.setResultCode(ResultVO.RESULT_FAILD);
             }
+
             callBackPluginJs(JsConst.ON_CONNECTION_STATE_CHANGE,mGson.toJson(resultVO));
         }
 
@@ -184,6 +187,7 @@ public class EUExBluetoothLE extends EUExBase {
         @Override
         public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
             callBackPluginJs(JsConst.ON_CHARACTERISTIC_CHANGED,mGson.toJson(transformDataFromCharacteristic(characteristic)));
+            callBackJsObjectBlue(JsConst.ON_CHARACTERISTIC_CHANGED_JSON,mGson.toJsonTree(transformDataFromCharacteristic(characteristic)));
         }
 
         @Override
@@ -195,8 +199,9 @@ public class EUExBluetoothLE extends EUExBase {
             }else if (status==BluetoothGatt.GATT_FAILURE){
                 resultVO.setResultCode(ResultVO.RESULT_FAILD);
             }
+            callBackJsObjectBlue(JsConst.ON_CHARACTERISTIC_WRITE_JSON,mGson.toJsonTree(resultVO));
             callBackPluginJs(JsConst.ON_CHARACTERISTIC_WRITE, mGson.toJson(resultVO));
-        }
+           }
 
         @Override
         public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
@@ -225,7 +230,48 @@ public class EUExBluetoothLE extends EUExBase {
             callBackPluginJs(JsConst.CALLBACK_WRITE_DESCRIPTOR, mGson.toJson(resultVO));
         }
 
+
+        @Override
+        public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
+            super.onReadRemoteRssi(gatt, rssi, status);
+            ReadRemoteRssiVO remoteRssiVO=new ReadRemoteRssiVO();
+            remoteRssiVO.rssi=rssi;
+            remoteRssiVO.status=status;
+            callBackJsObjectBlue(JsConst.ON_READ_REMOTE_RSSI,mGson.toJsonTree(remoteRssiVO));
+        }
+
+        @Override
+        public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
+            super.onMtuChanged(gatt, mtu, status);
+        }
+
+        @Override
+        public void onReliableWriteCompleted(BluetoothGatt gatt, int status) {
+            super.onReliableWriteCompleted(gatt, status);
+        }
+
     };
+
+    public void readRemoteRssi(String[] params){
+        if (mBluetoothGatt!=null){
+            mBluetoothGatt.readRemoteRssi();
+        }
+    }
+
+
+    public void setCharacteristicNotification(String[] params){
+        if (params.length<1){
+            return;
+        }
+        if (mBluetoothGatt==null){
+            return;
+        }
+        SetCharacteristicNotificationInputVO inputVO=
+                mGson.fromJson(params[0],SetCharacteristicNotificationInputVO.class);
+        BluetoothGattCharacteristic characteristic=getCharacteristicByID(inputVO.serviceUUID,inputVO.characteristicUUID);
+        mBluetoothGatt.setCharacteristicNotification(characteristic,inputVO.enable);
+    }
+
 
     // Demonstrates how to iterate through the supported GATT Services/Characteristics.
     // In this sample, we populate the data structure that is bound to the ExpandableListView
@@ -379,6 +425,7 @@ public class EUExBluetoothLE extends EUExBase {
             BluetoothDeviceVO deviceVO=new BluetoothDeviceVO();
             deviceVO.setAddress(device.getAddress());
             deviceVO.setName(device.getName());
+            deviceVO.setRssi(rssi);
             callBackPluginJs(JsConst.ON_LE_SCAN, mGson.toJson(deviceVO));
         }
     };
@@ -659,6 +706,15 @@ public class EUExBluetoothLE extends EUExBase {
                 + methodName + "('" + jsonData + "');}";
         mCallbackView.addUriTask(js);
 //        onCallback(js);
+    }
+
+    private void callBackJsObjectBlue(String methodName, Object jsonData){
+        if (mCallbackView==null){
+            return;
+        }
+        String js = SCRIPT_HEADER + "if(" + methodName + "){"
+                + methodName + "(" + jsonData + ");}";
+        mCallbackView.addUriTask(js);
     }
 
 }

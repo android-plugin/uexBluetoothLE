@@ -13,6 +13,8 @@ public class BluetoothDeviceVO implements Serializable {
 
     private String name;
 
+    private int rssi;
+
 
     public String getAddress() {
         return address;
@@ -28,5 +30,13 @@ public class BluetoothDeviceVO implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public int getRssi() {
+        return rssi;
+    }
+
+    public void setRssi(int rssi) {
+        this.rssi = rssi;
     }
 }
