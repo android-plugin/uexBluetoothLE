@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
-    <plugin uexName="uexBluetoothLE" version="3.0.4" build="4">
-        <info>4:修改回调函数名称与文档一致</info>
+    <plugin uexName="uexBluetoothLE" version="3.0.6" build="6">
+        <info>6:添加rssi及notification相关接口</info>
+        <build>5:添加直接返回Json对象的回调</build>
+        <build>4:修改回调函数名称与文档一致</build>
         <build>3:修正回调数据不正确的问题</build>
         <build>2:init时自动调用开启蓝牙</build>
         <build>1:js接口数据传输用Base64编码</build>
