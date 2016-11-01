@@ -167,8 +167,13 @@ public class EUExBluetoothLE extends EUExBase {
                     displayGattServices(mGattServices);
                 } catch (InterruptedException e) {
                 }
+            }else if(status==129){
+                mBluetoothAdapter.disable();
+                mBluetoothAdapter.enable();
+                final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(mBluetoothDeviceAddress);
+                mBluetoothGatt = device.connectGatt(mContext, true, mGattCallback);
             } else {
-
+                callBackPluginJs(JsConst.CALLBACK_CONNECT, "status:"+status);
             }
         }
 
