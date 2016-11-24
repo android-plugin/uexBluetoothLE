@@ -166,15 +166,14 @@ public class EUExBluetoothLE extends EUExBase {
                 try {
                     displayGattServices(mGattServices);
                 } catch (InterruptedException e) {
-                        callBackPluginJs(JsConst.CALLBACK_CONNECT, e.getCause().toString());
                 }
-            }else if (status==129){//如果是129，就重启蓝牙并重连
+            }else if(status==129){
                 mBluetoothAdapter.disable();
                 mBluetoothAdapter.enable();
                 final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(mBluetoothDeviceAddress);
                 mBluetoothGatt = device.connectGatt(mContext, true, mGattCallback);
-            }else {
-                callBackPluginJs(JsConst.CALLBACK_CONNECT, "status: "+status);
+            } else {
+                callBackPluginJs(JsConst.CALLBACK_CONNECT, "status:"+status);
             }
         }
 
@@ -337,11 +336,21 @@ public class EUExBluetoothLE extends EUExBase {
         return gattDescriptorVO;
     }
 
-    public boolean connect(String[] params) {
+    public void connect(String[] params) {
         if (params == null || params.length < 1) {
             errorCallback(0, 0, "error params!");
-            return false;
+            return;
         }
+        Message msg = new Message();
+        msg.obj = this;
+        msg.what = MSG_CONNECT;
+        Bundle bd = new Bundle();
+        bd.putStringArray(BUNDLE_DATA, params);
+        msg.setData(bd);
+        mHandler.sendMessage(msg);
+    }
+
+    private void connectMsg(String[] params) {
         String json = params[0];
         String address=null;
         try {
@@ -351,22 +360,23 @@ public class EUExBluetoothLE extends EUExBase {
             e.printStackTrace();
         }
         if (mBluetoothAdapter == null || address == null) {
-            return false;
+            return;
         }
 
         // Previously connected device.  Try to reconnect.
         if (mBluetoothDeviceAddress != null && address.equals(mBluetoothDeviceAddress) && mBluetoothGatt != null) {
-            return mBluetoothGatt.connect();
+            mBluetoothGatt.connect();
+            return;
         }
 
         final BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
 
         // We want to directly connect to the device, so we are setting the autoConnect
         // parameter to false.
-        mBluetoothGatt = device.connectGatt(mContext, true, mGattCallback);
+        mBluetoothGatt = device.connectGatt(mContext, false, mGattCallback);
 
         mBluetoothDeviceAddress = address;
-        return true;
+
     }
 
     public void disconnect(String[] params) {
@@ -652,6 +662,9 @@ public class EUExBluetoothLE extends EUExBase {
 
             case MSG_INIT:
                 initMsg(bundle.getStringArray(BUNDLE_DATA));
+                break;
+            case MSG_CONNECT:
+                connectMsg(bundle.getStringArray(BUNDLE_DATA));
                 break;
             case MSG_DISCONNECT:
                 disconnectMsg(bundle.getStringArray(BUNDLE_DATA));

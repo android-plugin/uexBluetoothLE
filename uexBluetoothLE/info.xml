@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
-    <plugin uexName="uexBluetoothLE" version="3.0.7" build="7">
-        <info>7:修复部分设备connect失败的问题</info>
+    <plugin uexName="uexBluetoothLE" version="4.0.0" build="7">
+        <info>7:4.0</info>
         <build>6:添加rssi及notification相关接口</build>
         <build>5:添加直接返回Json对象的回调</build>
         <build>4:修改回调函数名称与文档一致</build>
