@@ -293,16 +293,30 @@ public class EUExBluetoothLE extends EUExBase {
     public CharacteristicVO transformDataFromCharacteristic(BluetoothGattCharacteristic characteristic){
         CharacteristicVO characteristicVO=new CharacteristicVO();
         final byte[] data=characteristic.getValue();
+        String vStr = null;
         if (data!=null) {
             if (!TextUtils.isEmpty(mCharFormat)) {
+
+
+
+
                 StringBuilder stringBuilder = new StringBuilder(data.length);
                 for (byte byteChar : data) {
                     stringBuilder.append(String.format(mCharFormat, byteChar));
                 }
-                characteristicVO.setValue(stringBuilder.toString());
+
+                vStr = stringBuilder.toString();
+
+                Log.i(TAG, "-- transformDataFromCharacteristic " + vStr);
+                characteristicVO.setValue(vStr);
                 characteristicVO.setNeedDecode(false);
             } else {
-                characteristicVO.setValue(Base64.encodeToString(data,Base64.DEFAULT));
+
+                Log.i(TAG, "-- transformDataFromCharacteristic base64 string" + vStr);
+
+                vStr = Base64.encodeToString(data,Base64.DEFAULT);
+
+                characteristicVO.setValue(vStr);
                 characteristicVO.setNeedDecode(true);
             }
         }
@@ -460,17 +474,62 @@ public class EUExBluetoothLE extends EUExBase {
         String serviceUUID=null;
         String characteristicUUID=null;
         String value=null;
+        Boolean isHexString=false;
         try {
             JSONObject jsonObject = new JSONObject(json);
             serviceUUID=jsonObject.optString("serviceUUID");
             characteristicUUID=jsonObject.optString("characteristicUUID");
             value=jsonObject.optString("value");
+
+            if (!jsonObject.isNull("isHexString")) {
+
+                isHexString=jsonObject.optBoolean("isHexString");
+
+            }
+
         } catch (JSONException e) {
         }
-        writeCharacteristicByUUID(serviceUUID, characteristicUUID, value);
+        writeCharacteristicByUUID(serviceUUID, characteristicUUID, value, isHexString);
     }
 
-    private void writeCharacteristicByUUID(String serviceUUID,String characteristicUUID,String value){
+    /**
+     * 将两个ASCII字符合成一个字节；
+     * 如："EF"--> 0xEF
+     * @param src0 byte
+     * @param src1 byte
+     * @return byte
+     */
+    public static byte uniteBytes(byte src0, byte src1) {
+        byte _b0 = Byte.decode("0x" + new String(new byte[]{src0})).byteValue();
+        _b0 = (byte)(_b0 << 4);
+        byte _b1 = Byte.decode("0x" + new String(new byte[]{src1})).byteValue();
+        byte ret = (byte)(_b0 ^ _b1);
+        return ret;
+    }
+
+    /**
+     * 将指定字符串src，以每两个字符分割转换为16进制形式
+     * 如："2B44EFD9" --> byte[]{0x2B, 0x44, 0xEF, 0xD9}
+     * @param src String
+     * @return byte[]
+     */
+    public static byte[] HexString2Bytes(String src){
+
+        int len = src.length()/2;
+
+        byte[] ret = new byte[len];
+        byte[] tmp = src.getBytes();
+        for(int i=0; i<len; i++){
+            ret[i] = uniteBytes(tmp[i*2], tmp[i*2+1]);
+        }
+        return ret;
+    }
+
+
+
+    private void writeCharacteristicByUUID(String serviceUUID,String characteristicUUID,String value, Boolean isHexString){
+
+
         if (mGattServices==null){
             return;
         }
@@ -479,7 +538,25 @@ public class EUExBluetoothLE extends EUExBase {
             if (serviceUUID.equals(bluetoothGattService.getUuid().toString())){
                 BluetoothGattCharacteristic gattCharacteristic=bluetoothGattService.
                         getCharacteristic(UUID.fromString(characteristicUUID));
-                gattCharacteristic.setValue(Base64.decode(value,Base64.DEFAULT));
+
+                if (isHexString == true) {
+
+
+                    byte[] data = Base64.decode(value,Base64.DEFAULT);
+
+                    byte[] orgData = HexString2Bytes(new String(data));
+
+                    gattCharacteristic.setValue(orgData);
+
+
+
+                } else {
+
+                    gattCharacteristic.setValue(Base64.decode(value,Base64.DEFAULT));
+
+                }
+
+
                 mBluetoothGatt.writeCharacteristic(gattCharacteristic);
                break;
             }
