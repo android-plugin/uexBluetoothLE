@@ -290,6 +290,29 @@ public class EUExBluetoothLE extends EUExBase {
         callBackPluginJs(JsConst.CALLBACK_CONNECT, mGson.toJson(connectedVO));
     }
 
+    /**
+     * 将指定byte数组以16进制的形式打印到控制台
+     * @param hint String
+     * @param b byte[]
+     * @return void
+     */
+    public static void printHexString(String hint, byte[] b) {
+
+        StringBuilder ss = new StringBuilder();
+
+        for (int i = 0; i < b.length; i++) {
+            String hex = Integer.toHexString(b[i] & 0xFF);
+            if (hex.length() == 1) {
+                hex = '0' + hex;
+            }
+
+            ss.append(hex);
+
+        }
+
+        Log.i(TAG, ss.toString().toUpperCase());
+    }
+
     public CharacteristicVO transformDataFromCharacteristic(BluetoothGattCharacteristic characteristic){
         CharacteristicVO characteristicVO=new CharacteristicVO();
         final byte[] data=characteristic.getValue();
@@ -305,6 +328,9 @@ public class EUExBluetoothLE extends EUExBase {
                     stringBuilder.append(String.format(mCharFormat, byteChar));
                 }
 
+
+                //printHexString("", data);
+
                 vStr = stringBuilder.toString();
 
                 Log.i(TAG, "-- transformDataFromCharacteristic " + vStr);
@@ -312,9 +338,12 @@ public class EUExBluetoothLE extends EUExBase {
                 characteristicVO.setNeedDecode(false);
             } else {
 
-                Log.i(TAG, "-- transformDataFromCharacteristic base64 string" + vStr);
+
+                //printHexString("", data);
 
                 vStr = Base64.encodeToString(data,Base64.DEFAULT);
+
+                Log.i(TAG, "-- transformDataFromCharacteristic base64 string" + vStr);
 
                 characteristicVO.setValue(vStr);
                 characteristicVO.setNeedDecode(true);
