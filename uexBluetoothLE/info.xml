@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
-    <plugin uexName="uexBluetoothLE" version="4.0.0" build="0">
-        <info>0:4.0</info>
+    <plugin uexName="uexBluetoothLE" version="4.0.1" build="1">
+        <info>1:字符串转16进制处理</info>
+        <build>0:4.0</build>
     </plugin>
 </uexplugins>
